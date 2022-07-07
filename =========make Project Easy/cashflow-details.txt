@@ -1,0 +1,57 @@
+
+==========cashflow =============
+
+================Clone===============
+
+https://github.com/Gesvacations/gesvacations_front - fe
+https://github.com/Gesvacations/gesvacations_api - be
+
+https://github.com/Gesvacations/cashflowcentral_front - fe
+https://github.com/Gesvacations/cashflowcentral_api  - be 
+
+=================Token================
+
+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
+
+
+================server info =====================
+
+server informatio - ssh vishal@82.223.83.140 -p 795
+password -             Automatic7943578966796
+
+==================================================
+
+Command to run restart or build single service
+
+sudo docker-compose up --build  <service>
+
+Available services -->
+cashflow  : Frontend service
+cashflowbe : Backend service
+gesvacations : Frontend service
+gesvacationsbe : Backend service
+
+=============To rebuild a single service=============
+Command to run restart or build single service
+
+sudo docker-compose up --build  <service>
+
+Available services -->
+cashflow  : Frontend service
+cashflowbe : Backend service
+gesvacations : Frontend service
+gesvacationsbe : Backend service
+
+
+// avoid this if you've changed 1 or 2 services only.
+=============Release==============
+- this will rebuild whole container -
+
+git pull ===> if changes in that folder
+
+sudo docker-compose down 
+
+sudo docker-compose up --build ===>build and start
+
+sudo docker-compose up ===>rest if server down
+
