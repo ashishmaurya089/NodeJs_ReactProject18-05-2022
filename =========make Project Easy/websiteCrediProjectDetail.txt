@@ -1,0 +1,19 @@
+Loan -> Website ->   UserName = vishal1145    
+		     PasW     = ithours@ithours
+
+
+Loging Page ->   Username = vish@gmail.com
+		 PasW     = 123
+
+live url ->    http://staging.borrower.credin.in/
+
+
+
+7/04/2021  issue  ->   https://drive.google.com/file/d/1FdzbT7DcfriIdG3TFFZot7QVM6ceYuDS/view
+
+
+clone ==>https://gitlab.com/vishal1145/loan-disk.git
+
+
+
+

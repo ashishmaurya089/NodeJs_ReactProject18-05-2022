@@ -1,0 +1,433 @@
+import React, { useState, useEffect, Component } from 'react'
+import { Accordion, Card } from 'react-bootstrap'
+import {Link, useHistory} from "react-router-dom";
+import logo from '../public/images/credin-logo.png';
+import logo_white from '../public/images/credin-logo.svg';
+import user_photo from '../public/images/userPhoto.png';
+import { Form ,Button} from 'react-bootstrap';
+import "../components/dashboard.css"
+import "../components/sidebar.css"
+import "../components/user-profile.css"
+import "../components/sidebar-nav.css"
+import "../components/header.css"
+import "../components/search.css"
+import "../components/header-notification.css"
+import "../components/box-content.css"
+import "../components/userinfo-box.css"
+import "../components/titles.css"
+import "../components/custom-progress-bar.css"
+import "../components/custom-accordion.css"
+import "../components/form.css"
+import "../components/icon-box.css"
+import "../components/timeline-list.css"
+import "../components/sub-menu.css"
+declare var ithours_client;
+
+class Dashboard extends Component {
+
+    static contextTypes = {
+        router: () => true, 
+      }
+    constructor(props) {
+        super(props);
+        
+        this.state = {
+            Loan:[],
+            loan:'',
+            amount:'',
+            isActive: false,
+            firstName: " ",
+            image: "",
+            lastName:" ",
+            email:" ",
+            activeAmount:" ",
+            totaldue:"",
+            activeLoan:" ",
+            loanNumber:[],
+            loamFilter:[],
+            LoanAmount:"",
+            LoanId:"",
+            _id:"",
+        }
+        this.handleToggle = this.handleToggle.bind(this);
+    }
+   componentWillMount() {
+        this.callApi();
+        
+    }
+
+    openform = async () => {
+        debugger;
+        var loan_obj = this.state.loanNumber.find((l) => l.loan == this.state.LoanId);
+        var borrower_id = window.localStorage.getItem("BID");        
+        var loan_Amount = this.state.LoanAmount
+        var postData = {
+            borrower_id: borrower_id,   
+            loan_id: loan_obj.load_id,
+            // repayment_id: "60dbec2c239485531c08fb73",
+            amount: loan_Amount,  
+            email: "visha@g.com",
+            mobile: "9953813100",
+            redirect_url: window.location.origin + "/order-response"
+        };
+        console.log(postData)
+            this.getOrderObject(postData).then(response=>{
+                var information={
+                    action: response.token.action, // "https://securegw-stage.paytm.in/order/process",
+                    params: response.token.params
+                }
+                this.postForm(information)
+            }).then(response=>response.json()).catch(err=>console.log(err))
+    }
+  
+     getOrderObject=(data)=>
+    {
+     //   return fetch(`${window.apiBase}paytm/order-token`,{
+        return fetch(`http://staging.api.credin.in/paytm/order-token`,{
+            method:"POST",
+            headers:{
+                Accept:"application/json",
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify(data)
+        }).then(response=>response.json()).catch(err=>console.log(err))
+    }
+
+    postForm = async (details) => {
+        const form = this.buildForm(details)
+        document.body.appendChild(form)
+        form.submit()
+        form.remove()
+    }
+     buildForm = ({ action, params }) => {
+        const form = document.createElement('form')
+        form.setAttribute('method', 'post')
+        form.setAttribute('action', action)
+      
+        Object.keys(params).forEach(key => {
+          const input = document.createElement('input')
+          input.setAttribute('type', 'hidden')
+          input.setAttribute('name', key)
+          input.setAttribute('value', this.stringifyValue(params[key]))
+          form.appendChild(input)
+        })
+      
+        return form
+      }
+       stringifyValue(val) {
+        if (this.isObj(val) && !this.isDate(val)) {
+          return JSON.stringify(val)
+        } else {
+          return val
+        }
+      }
+
+       isDate(val) {
+        // Cross realm comptatible
+        return Object.prototype.toString.call(val) === '[object Date]'
+      }
+      
+       isObj(val) {
+        return typeof val === 'object'
+      }
+
+   async callApi(){
+    var borrower_id = window.localStorage.getItem("BID");
+        let laons = await ithours_client.get("loan", {
+            borrower: borrower_id,
+        });
+        console.log("loan data");
+        console.log(laons);
+        console.log("api loan hem");
+        console.log(laons.apidata.Data);
+        // console.log(loan.laons.apidata.Data);
+         debugger;
+        this.state.Loan = laons.apidata.Data
+        console.log("this is pay loan page loan data");
+        console.log(this.state.Loan);
+        this.state.totaldue = this.state.Loan.totaldue;
+        let datas = this.state.Loan.map((e) => e.principalamount)
+        console.log("this is our data");
+        this.state.loan = datas.length ;
+        this.setState({ });
+        console.log(datas); 
+
+// *********Loan Number***********
+        this.state.loamFilter = this.state.Loan.map((e) =>       { 
+         return {   loan: e.loan, load_id: e._id} 
+        });
+        console.log(this.state.loamFilter)      
+
+        this.state.loanNumber = this.state.loamFilter.filter(function (el) {
+            return el.loan != null;
+          });  
+          console.log(this.state.loanNumber);
+
+        let data3 = 0;
+        for(let i=0; i < datas.length; i++){
+            data3 = data3 + parseInt(datas[i])
+            console.log(data3)
+        }
+        this.state.amount = data3;
+        this.setState({ });
+        console.log(data3)
+    let data = await ithours_client.getOne("borrower", {
+        _id: borrower_id,
+    });
+    
+    console.log(borrower_id )
+    console.log(data);
+    console.log("api data");
+    console.log(data.apidata.Data);
+    
+    console.log(data);
+    if(data.apidata.Data == null){
+    }
+     /* this.state.firstName = data.apidata.Data.firstname;
+     console.log(this.state.firstName);
+     this.state.lastName = data.apidata.Data.lastname;
+
+     this.state.email = data.apidata.Data.email;
+     this.state.activeAmount = data.apidata.Data.activeamount;
+     this.state.activeLoan = data.apidata.Data.activeloan; */
+     this.setState({firstName: data.apidata.Data.firstname});
+     this.setState({lastName: data.apidata.Data.lastname});
+     this.setState({image:data.apidata.Data.borrowerphoto});
+     this.setState({email: data.apidata.Data.email});
+     this.setState({activeAmount: data.apidata.Data.activeamount});
+     this.setState({activeLoan: data.apidata.Data.activeloan});
+
+     this.setState({imageAlt:user_photo});
+
+     if(data.apidata.Data.borrowerphoto==undefined){
+    //     document.getElementById("userPhoto1").style.display = "block";
+    //     document.getElementById("userPhoto").style.display = "none";
+        document.getElementById("userPhoto3").style.display = "block";
+        document.getElementById("userPhoto2").style.display = "none";
+    }
+    else{
+        // document.getElementById("userPhoto1").style.display = "none";
+        // document.getElementById("userPhoto").style.display = "block";
+        document.getElementById("userPhoto3").style.display = "none";
+        document.getElementById("userPhoto2").style.display = "block";
+    }
+     
+   }
+     handleToggle(){
+        this.setState((e) => ({ isActive: !this.state.isActive}));
+      }; 
+
+      LoanAmountData(e) {
+        console.log(e);
+        this.state.LoanAmount = e.target.value;
+        this.setState({   });
+      };
+      loanIdNo(e) {
+        this.state.LoanId= e.target.value; 
+        this.setState({   });
+      }
+
+render(){
+    return (
+        <div className="dashboard">
+            <div className="header-wrap">
+                <div className="header-inner d-flex align-items-center justify-content-between">
+                    <div className="logo">
+                        <a href="#"><img src={logo} alt="" /></a>
+                    </div>
+                    <div className="header-right d-flex align-items-center justify-content-end flex-grow-1">
+                        <div className="logout">
+                            <Link to="/"><i className="fa fa-sign-out" aria-hidden="true"></i></Link> 
+                        </div>
+                        <div className="menu-toggle">
+                            <a href="javascript:;" onClick={this.handleToggle}><i className="fa fa-bars" aria-hidden="true"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div className={this.state.isActive ? "sidebar d-flex flex-column" : "sidebar d-flex flex-column open"}>
+                <div className="close-sidebar">
+                    <a href="javascript:;" onClick={this.handleToggle}><i className="fa fa-times" aria-hidden="true"></i></a>
+                </div>
+                <div className="logo">
+                    <a href="#"><img src={logo_white} alt="" /></a>
+                    {/* <div>Enabling people</div> */}
+                </div>
+                {/* <div className="user-profile">
+                    <div className="user-profile-wrap d-inline-flex flex-wrap align-items-center">
+                        <div className="user-prof-img"  id="userPhoto"><img src={this.state.image} alt="" /></div>
+                        <div className="user-prof-img"  id="userPhoto1"><img src={this.state.imageAlt} alt="" /></div>
+                          <div className="user-prof-text">
+                            <div style={{overflow:'hidden',fontSize:18,textTransform: 'capitalize'}}>{this.state.firstName}{""} {this.state.lastName}</div>
+                        </div>
+                    </div>
+                </div> */}
+                <div className="sidebar-nav">
+                     <ul>
+                        <li><Link to="/dashboard" ><i className="fa fa-home" aria-hidden="true"></i>Dashboard</Link></li>
+                        <li><Link to="/my-loan" ><i className="fa fa-folder" aria-hidden="true"></i>My Loans</Link></li>
+                        <li><Link to="/pay-loans" className="active"><i className="fa fa-inr" aria-hidden="true"></i>Pay Loans</Link></li>
+                        <li><Link to="/apply-lon-welcome" ><i className="fa fa-pie-chart" aria-hidden="true"></i>Apply New Loan</Link></li>
+                        <li><Link to="/loan-calculator" ><i className="fa fa-calculator" aria-hidden="true"></i>Loan Calculator</Link></li>
+                        <li><Link to="/income-proof"><i className="fa fa-cog" aria-hidden="true"></i>Income Proof</Link></li>
+                        <li><Link to="/settings"><i className="fa fa-cog" aria-hidden="true"></i>Settings</Link></li>
+                     </ul>
+                </div>
+            </div>
+            <div className="dashboard-wrap">
+                <div className="dashboard-row d-flex flex-wrap">
+                    <div className="dashboard-col">
+                        <div className="box-content d-flex align-items-center h-100">
+                            <div className="userinfo-box d-flex flex-wrap align-items-center w-100">
+                                
+                                <div className="user-img" id="userPhoto2">
+                                    <img src={this.state.image} alt=""/>
+                                </div>
+                                <div className="user-img" id="userPhoto3">
+                                    <img src={this.state.imageAlt} alt="" />
+                                </div>
+                                <div className="user-content">
+                                    <h2  className="width">Welcome </h2>
+                                    <h2 style={{textTransform: 'capitalize'}}>{this.state.firstName}</h2>
+                                    <div className="user-mail width box-width"><a href="mailto:swapnil.dreamwind@gmail.com">{this.state.email}</a></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="dashboard-col" style={{display:"none"}}>
+                        <div className="box-content d-flex align-items-center h-100">
+                            <div className="profile-status w-100">
+                                <div className="title title-line">
+                                    <h4>Profile Status</h4>
+                                    <p>Complete your profile now</p>
+                                </div>
+                                <div className="custom-progress-bar d-flex align-items-end">
+                                    <div className="progress-bar-wrap flex-grow-1">
+                                        <span style={{width: "25%"}}></span>
+                                    </div>
+                                    <div className="progress-num">25%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div className="dashboard-row d-flex flex-wrap dashboard-row-reverse">
+                    <div className="dashboard-col">
+                        <div className="row">
+                            <div className="col-md-6">
+                                <div className="icon-box">
+                                    <div className="icon-wrap"><i className="fa fa-clone" aria-hidden="true"></i></div>
+                                    <h4>{this.state.amount}</h4>
+                                    <p>Amount</p>
+                                    <div className="icon-box-link">
+                                        <a href="#"><i className="fa fa-long-arrow-right" aria-hidden="true"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="col-md-6">
+                                <div className="icon-box box-green">
+                                    <div className="icon-wrap"><i className="fa fa-download" aria-hidden="true"></i></div>
+                                    <h4>{this.state.loan}</h4>
+                                    <p>Loan</p>
+                                    <div className="icon-box-link">
+                                        <a href="#"><i className="fa fa-long-arrow-right" aria-hidden="true"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="box-content" style={{display:"none"}}>
+                            <div className="title title-line">
+                                <h4>Status</h4>
+                                <p>Requests Approval Status</p>
+                            </div>
+                            <div className="timeline-list">
+                                <ul>
+                                    <li className="completed">
+                                        <i className="fa fa-check" aria-hidden="true"></i>
+                                        <div className="title">
+                                            <h4>Awaiting Approval</h4>
+                                            <p>4 Requests</p>
+                                        </div>
+                                    </li>
+                                    <li className="pending">
+                                        <i className="fa fa-clock-o" aria-hidden="true"></i>
+                                        <div className="title">
+                                            <h4>Pending Action</h4>
+                                            <p>31 Requests</p>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="dashboard-col">
+                        <div className="custom-accordion">
+                            <Accordion defaultActiveKey="0">
+                                <Card>
+                                    <Accordion.Toggle as={Card.Header} eventKey="0">
+                                    <i className="fa fa-inr" aria-hidden="true"></i>
+                                    <div className="title title-line">
+                                        <h4>Payout</h4>
+                                    </div>
+                                    </Accordion.Toggle>
+                                    <Accordion.Collapse eventKey="0">
+                                    <Card.Body>
+                                        <Form.Group  controlId="exampleForm.ControlSelect1">
+                                            <Form.Label>Loans Numbers*</Form.Label>
+                                            <Form.Control style={{width:'100%', paddingLeft:'0px'}} as="select" placeholder="Loans Numbers" value={this.state.LoanId} onChange={(e) => this.loanIdNo(e)} >
+                                                           <option>Select LoanId </option>
+                                                            {this.state.loanNumber.map((loan) => {
+                                                        return <option value={loan.loan_id}>{loan.loan}</option>;
+                                                    })}
+                                            </Form.Control>
+                                        </Form.Group>
+
+                                        <Form.Group controlId="formBasicEmail">
+                                            <Form.Label>Amount Pay*</Form.Label>
+                                            <Form.Control type="number"  placeholder="Amount Pay" value={this.state.LoanAmount} onChange={(e) => this.LoanAmountData(e)} />                                            
+                                        </Form.Group>
+                                        <div className="form-submit">
+                                             <Button className="cta-btn cta-blue" onClick={(e) => this.openform()} >Pay Your Outstanding Amount</Button>
+                                         </div>
+
+
+                                         {/* <div style={{ width:"100%" }}>
+                                <div style={{width:"50%", backgroundColor: '#33cc00', borderRadius:"10px", textAlign:'center', color: 'white', padding: '10px' ,display:"flex",alignItems:"center", cursor: 'pointer',marginBottom:15,}} 
+                            onClick={(e) => this.openform()}>
+                                <p style={{color: 'white',fontSize:"16px",fontWeight:600, margin: '0',textAlign:"center" ,marginRight:"auto", marginLeft:"auto",marginRight:"auto",display:"flex",alignItems:"center"}}> 
+                                <span style={{color: 'white',fontSize:"24px",marginRight:10, }}>&#8377;</span>
+                                Pay Your Outstanding Amount</p>
+                            </div>
+                                </div> */}
+                                    </Card.Body>
+                                    </Accordion.Collapse>
+                                </Card>
+
+                              <Card>
+                                    <Accordion.Toggle as={Card.Header} eventKey="1">
+                                    <i className="fa fa-inr" aria-hidden="true"></i>
+                                    <div className="title title-line">
+                                        <h4>Due</h4>
+                                    </div>
+                                    </Accordion.Toggle>
+                                    <Accordion.Collapse eventKey="1">
+                                    <Card.Body>
+                                      <Form.Group controlId="formBasicEmail">
+                                          <Form.Label>Total Due</Form.Label>
+                                            <Form.Control type="tel" placeholder="Total Due" maxlength="12" disabled value={this.state.totaldue} />
+                                        </Form.Group>
+                                        
+                                    </Card.Body>
+                                    </Accordion.Collapse>
+                                </Card>
+                            </Accordion>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+     );
+   }
+}
+export default Dashboard
